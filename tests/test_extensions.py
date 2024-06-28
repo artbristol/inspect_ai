@@ -61,10 +61,8 @@ async def test_extension_toolenv():
         )
 
         assert len(eval_result) == 1
-        assert (
-            eval_result[0].samples[0].messages[-2].content
-            == "Hello from the fake PodmanToolEnvironment!"
-        )
+        tool_message = eval_result[0].samples[0].messages[-2]
+        assert tool_message.content == "Hello from the fake PodmanToolEnvironment!"
 
     except Exception as ex:
         pytest.fail(f"Exception raised: {ex}")
