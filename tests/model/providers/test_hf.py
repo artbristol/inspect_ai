@@ -1,5 +1,4 @@
 import pytest
-from test_helpers.utils import skip_if_github_action
 from transformers import PreTrainedModel  # type: ignore
 
 from inspect_ai.model import (
@@ -24,7 +23,6 @@ def model() -> PreTrainedModel:
 
 
 @pytest.mark.asyncio
-@skip_if_github_action
 async def test_hf_api(model: PreTrainedModel) -> None:
     message = ChatMessageUser(content="Lorem ipsum dolor")
     response = await model.generate(input=[message])
@@ -32,7 +30,6 @@ async def test_hf_api(model: PreTrainedModel) -> None:
 
 
 @pytest.mark.asyncio
-@skip_if_github_action
 async def test_hf_api_fails(model: PreTrainedModel) -> None:
     temp_before = model.config.temperature
     try:
