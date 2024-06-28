@@ -2,7 +2,6 @@ import os
 from typing import Type, TypeVar
 
 import pytest
-from test_helpers.utils import skip_if_github_action
 
 from inspect_ai.dataset import (
     Dataset,
@@ -49,7 +48,6 @@ def test_dataset_fields_fn(type: Type[T_ds], file: str) -> None:
     assert_sample(dataset[0])
 
 
-@skip_if_github_action
 def test_dataset_read_id() -> None:
     dataset = example_dataset(
         "biology_qa",
