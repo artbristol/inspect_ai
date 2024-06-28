@@ -72,6 +72,7 @@ COMPOSE_COMMENT = """# inspect auto-generated docker compose file
 COMPOSE_GENERIC_YAML = f"""{COMPOSE_COMMENT}
 services:
   default:
+    stop_grace_period: 1s
     image: "python:3.12-bookworm"
     command: "tail -f /dev/null"
     network_mode: none
@@ -80,6 +81,7 @@ services:
 COMPOSE_DOCKERFILE_YAML = f"""{COMPOSE_COMMENT}
 services:
   default:
+    stop_grace_period: 1s
     build:
       context: "."
     command: "tail -f /dev/null"
