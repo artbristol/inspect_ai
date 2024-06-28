@@ -5,11 +5,10 @@ import sys
 
 import pytest
 from test_helpers.tools import list_files
-from test_helpers.utils import skip_if_no_openai
 
 from inspect_ai import Task, eval_async
 from inspect_ai.dataset import Sample
-from inspect_ai.model import get_model
+from inspect_ai.model import ModelOutput, get_model
 from inspect_ai.scorer import includes
 from inspect_ai.solver import generate, use_tools
 
@@ -25,7 +24,6 @@ async def test_extension_model():
     assert result.completion == "Hello from gpt7"
 
 
-@skip_if_no_openai
 @pytest.mark.asyncio
 async def test_extension_toolenv():
     # ensure the package is installed
@@ -43,7 +41,29 @@ async def test_extension_toolenv():
             scorer=includes(),
             tool_environment="podman",
         )
-        await eval_async(task, model="openai/gpt-4")
+        eval_result = await eval_async(
+            task,
+            model=get_model(
+                "mockllm/model",
+                custom_outputs=[
+                    ModelOutput.for_tool_call(
+                        model="mockllm/model",
+                        tool_name="list_files",
+                        tool_arguments={"dir": "."},
+                    ),
+                    ModelOutput.from_content(
+                        model="mockllm/model",
+                        content="just some text after that exhausting tool call",
+                    ),
+                ],
+            ),
+            log_level="debug",
+        )
+
+        assert len(eval_result) == 1
+        tool_message = eval_result[0].samples[0].messages[-2]
+        assert tool_message.content == "Hello from the fake PodmanToolEnvironment!"
+
     except Exception as ex:
         pytest.fail(f"Exception raised: {ex}")
 

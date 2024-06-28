@@ -32,7 +32,12 @@ class PodmanToolEnvironment(ToolEnvironment):
         env: dict[str, str] = {},
         timeout: int | None = None,
     ) -> ExecResult[str]:
-        return ExecResult(success=True, returncode=0, stdout="Hello!", stderr="")
+        return ExecResult(
+            success=True,
+            returncode=0,
+            stdout="Hello from the fake PodmanToolEnvironment!",
+            stderr="",
+        )
 
     @override
     async def write_file(self, file: str, contents: str | bytes) -> None:
