@@ -107,3 +107,39 @@ def test_simple() -> None:
     sample = res[0].samples[0]
     tool_calls = [x for x in sample.messages if x.role == "tool"]
     assert str(11 + 23) in tool_calls[1].text
+
+
+def test_long_running() -> None:
+    res: List[EvalLog] = eval(
+        tmux_shell(
+            (
+                "docker",
+                str(Path(__file__).resolve().parent / "tmux_terminal_compose.yaml"),
+            )
+        ),
+        get_model(
+            "mockllm/model",
+            custom_outputs=[
+                ModelOutput.for_tool_call(
+                    "mockllm/model",
+                    tool_name=term_send_text.__name__,
+                    tool_arguments={"text": ["sleep 5; echo $(( 11 + 23 ))", "Enter"]},
+                ),
+                ModelOutput.for_tool_call(
+                    "mockllm/model",
+                    tool_name=term_read.__name__,
+                    tool_arguments={},
+                ),
+                ModelOutput.from_content("mockllm/model", content="wooza"),
+                ModelOutput.from_content("mockllm/model", content="wooza"),
+            ],
+        ),
+        sandbox_cleanup=False,
+    )
+    assert res
+    assert res[0]
+    assert res[0].error is None
+    assert res[0].samples
+    sample = res[0].samples[0]
+    tool_calls = [x for x in sample.messages if x.role == "tool"]
+    assert str(11 + 23) in tool_calls[1].text
