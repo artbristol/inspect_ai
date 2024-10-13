@@ -16,7 +16,9 @@ logger = getLogger(__name__)
 # plan: wait for window_activity
 # then wait using monitor-silence?
 
-tmux_session_name = "_tmux_term.py_session"
+tmux_session_name = "_tmux_term_py_session"
+
+session_specifier = f"-t={tmux_session_name}:"
 
 
 # TODO: FileNotFoundError for local sandbox exec of nonexistent command?
@@ -33,7 +35,9 @@ def term_send_text() -> Tool:
             True
         """
         await _ensure_tmux_started()
-        send_text_res = await sandbox().exec(["tmux", "send-keys"] + text)
+        send_text_res = await sandbox().exec(
+            ["tmux", "send-keys", session_specifier] + text
+        )
         if send_text_res.returncode != 0:
             raise Exception(f"problem sending text: {send_text_res=}")
         return True
@@ -51,7 +55,9 @@ def term_read() -> Tool:
             Contents of the terminal window.
         """
         await _ensure_tmux_started()
-        read_res = await sandbox().exec(["tmux", "capture-pane", "-p"])
+        read_res = await sandbox().exec(
+            ["tmux", "capture-pane", session_specifier, "-p"]
+        )
         if read_res.returncode != 0:
             raise Exception(f"problem reading: {read_res=}")
 
@@ -74,7 +80,7 @@ async def _ensure_tmux_started() -> None:
         raise Exception("Could not execute tmux in the sandbox, is it installed?")
 
     check_tmux = await sandbox().exec(
-        ["tmux", "new-session", "-d", "-t", tmux_session_name]
+        ["tmux", "new-session", "-d", "-s", tmux_session_name]
     )
     if check_tmux.returncode != 0:
         if check_tmux.returncode == 1 and "duplicate session" in check_tmux.stderr:
