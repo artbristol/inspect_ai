@@ -44,7 +44,7 @@ def term_send_text() -> Tool:
 
 @tool
 def term_read() -> Tool:
-    async def execute():
+    async def execute() -> str:
         """
         Reads the terminal window.
 
@@ -59,7 +59,7 @@ def term_read() -> Tool:
     return execute
 
 
-async def _ensure_tmux_started():
+async def _ensure_tmux_started() -> None:
     problem_starting = True
     try:
         check_tmux = await sandbox().exec(["tmux", "-V"])  # just check the version
@@ -72,7 +72,7 @@ async def _ensure_tmux_started():
 
 
 @task
-def tmux_shell():
+def tmux_shell() -> Task:
     return Task(
         dataset=[
             Sample(
