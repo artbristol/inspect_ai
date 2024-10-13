@@ -16,6 +16,8 @@ logger = getLogger(__name__)
 # plan: wait for window_activity
 # then wait using monitor-silence?
 
+tmux_session_name = "_tmux_term.py_session"
+
 
 # TODO: FileNotFoundError for local sandbox exec of nonexistent command?
 @tool
@@ -54,12 +56,23 @@ def term_read() -> Tool:
 
 
 async def _ensure_tmux_started() -> None:
-    problem_starting = True
+    tmux_execution_problem = True
+
     try:
-        check_tmux = await sandbox().exec(["tmux", "-V"])  # just check the version
+        check_tmux = await sandbox().exec(["tmux", "-V"])
         if check_tmux.returncode == 0:
-            problem_starting = False
+            tmux_execution_problem = False
     except (PermissionError, FileNotFoundError) as ex:
         logger.debug(f"Permission error starting tmux: {ex=}")
-    if problem_starting:
+
+    if tmux_execution_problem:
         raise Exception("Could not execute tmux in the sandbox, is it installed?")
+
+    check_tmux = await sandbox().exec(
+        ["tmux", "new-session", "-d", "-t", tmux_session_name]
+    )
+    if check_tmux.returncode != 0:
+        if check_tmux.returncode == 1 and "duplicate session" in check_tmux.stderr:
+            logger.debug("tmux already started")
+        else:
+            raise Exception(f"problem starting session: {check_tmux=}")
