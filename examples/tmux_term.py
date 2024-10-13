@@ -1,4 +1,5 @@
 from logging import getLogger
+from typing import List
 
 from inspect_ai import Task, eval, task
 from inspect_ai.dataset import Sample
@@ -13,17 +14,17 @@ logger = getLogger(__name__)
 
 @tool
 def term_send_text() -> Tool:
-    async def execute(text: str) -> bool:
+    async def execute(text: List[str]) -> bool:
         """
         Sends text to the terminal.
 
         Args:
-            text: text to send
+            text: list of text to send, per tmux manual
 
         Returns:
             True
         """
-        await sandbox().exec(["tmux", "send-keys", text])
+        await sandbox().exec(["tmux", "send-keys"] + text)
         return True
 
     return execute
@@ -73,7 +74,12 @@ if __name__ == "__main__":
                 ModelOutput.for_tool_call(
                     "mockllm/model",
                     tool_name=term_send_text.__name__,
-                    tool_arguments={"text": "echo blange"},
+                    tool_arguments={"text": ["emacs -nw", "Enter"]},
+                ),
+                ModelOutput.for_tool_call(
+                    "mockllm/model",
+                    tool_name=term_send_text.__name__,
+                    tool_arguments={"text": ["C-h", "r"]},
                 ),
                 ModelOutput.for_tool_call(
                     "mockllm/model",
