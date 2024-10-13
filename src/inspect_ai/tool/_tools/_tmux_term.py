@@ -32,7 +32,10 @@ def term_send_text() -> Tool:
         Returns:
             True
         """
-        await sandbox().exec(["tmux", "send-keys"] + text)
+        await _ensure_tmux_started()
+        send_text_res = await sandbox().exec(["tmux", "send-keys"] + text)
+        if send_text_res.returncode != 0:
+            raise Exception(f"problem sending text: {send_text_res=}")
         return True
 
     return execute
@@ -48,9 +51,11 @@ def term_read() -> Tool:
             Contents of the terminal window.
         """
         await _ensure_tmux_started()
-        res = await sandbox().exec(["tmux", "capture-pane", "-p"])
+        read_res = await sandbox().exec(["tmux", "capture-pane", "-p"])
+        if read_res.returncode != 0:
+            raise Exception(f"problem reading: {read_res=}")
 
-        return res.stdout
+        return read_res.stdout
 
     return execute
 

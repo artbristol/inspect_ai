@@ -68,7 +68,9 @@ def test_not_installed() -> None:
     assert res
     assert res[0]
     assert res[0].error
-    assert "Could not execute tmux in the sandbox, is it installed" in res[0].error.message
+    assert (
+        "Could not execute tmux in the sandbox, is it installed" in res[0].error.message
+    )
 
 
 def test_simple() -> None:
@@ -76,10 +78,7 @@ def test_simple() -> None:
         tmux_shell(
             (
                 "docker",
-                str(
-                    Path(__file__).resolve().parent
-                    / "tmux_terminal_compose.yaml"
-                ),
+                str(Path(__file__).resolve().parent / "tmux_terminal_compose.yaml"),
             )
         ),
         get_model(
@@ -99,11 +98,12 @@ def test_simple() -> None:
                 ModelOutput.from_content("mockllm/model", content="wooza"),
             ],
         ),
+        sandbox_cleanup=False,
     )
     assert res
     assert res[0]
     assert res[0].error is None
     assert res[0].samples
     sample = res[0].samples[0]
-    tool_calls = [x for x in sample.messages if x.role == 'tool']
-    assert str(11+23) in tool_calls[1].text
+    tool_calls = [x for x in sample.messages if x.role == "tool"]
+    assert str(11 + 23) in tool_calls[1].text
